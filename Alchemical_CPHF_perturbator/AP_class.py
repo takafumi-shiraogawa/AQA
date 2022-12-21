@@ -1,23 +1,17 @@
-#write down a smart class 
+#write down a smart class
 
-import pyscf.qmmm
 from pyscf import gto, scf
 import numpy as np
-from pyscf import lib
-from functools import reduce
-from pyscf.scf import cphf
-from pyscf import lib
-from pyscf.prop.nmr import rhf as rhf_nmr
 from aaff import alc_deriv_grad_nuc,aaff_resolv
-from scipy.spatial.transform import Rotation as R
 from FcMole import FcM_like
-from AP_utils import alias_param,parse_charge,DeltaV,charge2symbol 
+from AP_utils import alias_param,DeltaV,charge2symbol
 from alch_deriv import *
 from ABSEC import abse_atom
 import copy
+import sys
 
 
-class APDFT_perturbator(lib.StreamObject):
+class APDFT_perturbator():
     @alias_param(param_name="symmetry", param_alias='symm')
     def __init__(self,mf,symmetry=None,sites=None):
         self.mf=mf
@@ -38,7 +32,7 @@ class APDFT_perturbator(lib.StreamObject):
         self.cubic_hessian=None
         self.hessian=None
         self.gradient=None
-    
+
     def U(self,atm_idx):
         if atm_idx not in self.sites:
                 self.sites.append(atm_idx)
@@ -49,10 +43,10 @@ class APDFT_perturbator(lib.StreamObject):
                 self.sites.append(atm_idx)
                 self.perturb()
         return make_dP(self.mf,self.mo1s[atm_idx])
-    
+
     def perturb(self):
         for site in self.sites:
-            if site in self.mo1s: 
+            if site in self.mo1s:
                 pass
             elif  self.symm and site in self.symm.eqs:
                 ref_idx=self.symm.eqs[site]['ref']
@@ -70,24 +64,24 @@ class APDFT_perturbator(lib.StreamObject):
                 self.sites.append(atm_idx)
             self.perturb()
         return self.mo1s[atm_idx]
-        
+
     def dV(self,atm_idx):
-        if atm_idx not in self.dVs: 
+        if atm_idx not in self.dVs:
             if atm_idx not in self.sites:
                 self.sites.append(atm_idx)
             self.perturb()
         return self.dVs[atm_idx]
-        
+
     def e1(self,atm_idx):
-        if atm_idx not in self.e1s: 
+        if atm_idx not in self.e1s:
             if atm_idx not in self.sites:
                 self.sites.append(atm_idx)
             self.perturb()
         return self.e1s[atm_idx]
-        
+
     def af(self,atm_idx):
-        if atm_idx in self.afs: 
-            return self.afs[atm_idx] 
+        if atm_idx in self.afs:
+            return self.afs[atm_idx]
         elif self.symm and atm_idx in self.symm.eqs:
             ref_idx=self.symm.eqs[atm_idx]['ref']
             afr=self.af(ref_idx)
@@ -102,10 +96,10 @@ class APDFT_perturbator(lib.StreamObject):
             af+=alc_deriv_grad_nuc(self.mol,DZ)
             self.afs[atm_idx]=af
         return self.afs[atm_idx]
-    
+
     def first_deriv(self,atm_idx):
         return first_deriv_elec(self.mf,self.dV(atm_idx))+first_deriv_nuc_nuc(self.mol,[[atm_idx],[1]])
-    
+
     def second_deriv(self,idx_1,idx_2):
         return second_deriv_elec(self.mf,self.dV(idx_1),self.mo1(idx_2)) +second_deriv_nuc_nuc(self.mol,[[idx_1,idx_2],[1,1]])
     def third_deriv(self,pvec):
@@ -135,7 +129,7 @@ class APDFT_perturbator(lib.StreamObject):
                 for j in range(i,len(idxs)):
                     hessian[i,j]=second_deriv_nuc_nuc(self.mol,[[idxs[i],idxs[j]],[1,1]])/2
             hessian+=hessian.T
-            return hessian   
+            return hessian
     def build_cubic_hessian(self):
             idxs=self.sites
             mo1s=np.asarray([self.mo1(x) for x in idxs])
@@ -155,9 +149,9 @@ class APDFT_perturbator(lib.StreamObject):
         return self.APDFT1(pvec)+0.5*np.einsum('i,ij,j',pvec,self.hessian,pvec)
     def APDFT3(self,pvec):
         pvec=np.asarray(pvec)
-        return self.APDFT2(pvec)+1/6*np.einsum('ijk,i,j,k',self.cubic_hessian,pvec,pvec,pvec)     
-    
-    def target_energy_ref_bs(self,pvec):  # with refernce basis set 
+        return self.APDFT2(pvec)+1/6*np.einsum('ijk,i,j,k',self.cubic_hessian,pvec,pvec,pvec)
+
+    def target_energy_ref_bs(self,pvec):  # with refernce basis set
         tmol=self.target_mol_ref_bs(pvec)
         b2mf=scf.RHF(tmol)
         return b2mf.scf(dm0=b2mf.init_guess_by_1e())
@@ -183,13 +177,13 @@ class APDFT_perturbator(lib.StreamObject):
         tmf=scf.RHF(self.target_mol(pvec))
         return tmf.scf()
 
-    
+
     def ap_bsec(self,pvec):
         ral=[charge2symbol[i] for i in self.mol.atom_charges()]
         tal=[charge2symbol[i] for i in self.target_mol(pvec).atom_charges()]
         if len(ral) != len(tal):
             print(ral,tal,"reference and target lengths do not match!", sys.exc_info()[0])
-            raise 
+            raise
         bsecorr=0
         for i in range(len(ral)):
             bsecorr+=abse_atom(ral[i],tal[i],bs=self.mol.basis)
@@ -200,5 +194,3 @@ def parse_to_array(natm,dL):
     for i in range(len(dL[0])):
         arr[dL[0][i]]=dL[1][i]
     return arr
-
-        
