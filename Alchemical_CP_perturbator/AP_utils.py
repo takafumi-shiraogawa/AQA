@@ -58,9 +58,8 @@ def parse_charge(dL):
 
 def DeltaV(mol,dL):
     """dL=[[i1,i2,i3],[c1,c2,c3]]"""
-    mol.set_rinv_orig_(mol.atom_coords()[dL[0][0]])
-    dV=mol.intor('int1e_rinv')*dL[1][0]
-    for i in range(1,len(dL[0])): 
+    dV = 0.0
+    for i in range(len(dL[0])):
         mol.set_rinv_orig_(mol.atom_coords()[dL[0][i]])
         dV+=mol.intor('int1e_rinv')*dL[1][i]
     return -dV
