@@ -32,6 +32,8 @@ class APDFT_perturbator():
         self.cubic_hessian=None
         self.hessian=None
         self.gradient=None
+        self.elec_gradient=None
+        self.nuc_gradient=None
 
     def U(self,atm_idx):
         if atm_idx not in self.sites:
@@ -109,6 +111,19 @@ class APDFT_perturbator():
         idxs=self.sites
         self.gradient=np.asarray([self.first_deriv(x) for x in idxs])
         return self.gradient
+
+    def build_elec_gradient(self):
+        """ Electronic term only. """
+        idxs=self.sites
+        self.elec_gradient=np.asarray([first_deriv_elec(self.mf,self.dV(x)) for x in idxs])
+        return self.elec_gradient
+
+    def build_nuc_gradient(self):
+        """ Nuclear term only. """
+        idxs=self.sites
+        self.nuc_gradient=np.asarray([first_deriv_nuc_nuc(self.mol,[[x],[1]]) for x in idxs])
+        return self.nuc_gradient
+
     def build_hessian(self):
         mo1s=[]
         dVs=[]
