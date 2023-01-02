@@ -1,29 +1,22 @@
-import pyscf.qmmm
-from pyscf import gto, scf
-import numpy as np
-import pyscf.qmmm
-from pyscf import gto, scf
 import numpy as np
 from pyscf import lib
-from functools import reduce
 from pyscf.scf import cphf
-from pyscf import lib
 from pyscf.prop.nmr import rhf as rhf_nmr
-from AP_utils import alias_param,parse_charge,DeltaV
+from AP_utils import parse_charge,DeltaV
 
 
 def alchemy_cphf_deriv(mf,int_r, with_cphf=True):
     polobj=mf.Polarizability()
-    mol = mf.mol
+    # mol = mf.mol
     mo_energy = mf.mo_energy
     mo_coeff = mf.mo_coeff
     mo_occ = mf.mo_occ
     occidx = mo_occ > 0
     orbo = mo_coeff[:, occidx]
-    orbv = mo_coeff[:,~occidx]
-    charges = mol.atom_charges()
-    coords  = mol.atom_coords()
-    charge_center = np.einsum('i,ix->x', charges, coords) / charges.sum()
+    # orbv = mo_coeff[:,~occidx]
+    # charges = mol.atom_charges()
+    # coords  = mol.atom_coords()
+    # charge_center = np.einsum('i,ix->x', charges, coords) / charges.sum()
     h1 = lib.einsum('pq,pi,qj->ij', int_r, mo_coeff.conj(), orbo) #going to molecular orbitals
     h1=h1.reshape((1,h1.shape[0],h1.shape[1]))
     s1 = np.zeros_like(h1)
@@ -58,7 +51,7 @@ def second_deriv_nuc_nuc(mol,dL):
                 r = np.linalg.norm(r1-r2)
                 dnn += (dL[1][i] * dL[1][j])/ r
     return 2*dnn
-                
+
 def first_deriv_elec(mf,int_r):
     P=mf.make_rdm1()
     return np.einsum('ij,ji',P,int_r)
@@ -93,7 +86,7 @@ def alch_deriv(mf,dL=[]):
     """
     mol=mf.mol
     dL=parse_charge(dL)
-    int_r=DeltaV(mol,dL)    
+    int_r=DeltaV(mol,dL)
     mo1,e1=alchemy_cphf_deriv(mf,int_r)
     der1=first_deriv_elec(mf,int_r)+first_deriv_nuc_nuc(mol,dL)
     der2=second_deriv_elec(mf,int_r,mo1)+second_deriv_nuc_nuc(mol,dL)
@@ -120,12 +113,12 @@ def alch_hessian(mf,int_r,mo1):
     mo_coeff=mf.mo_coeff
     mo_occ = mf.mo_occ
     occidx = mo_occ > 0
-    orbo = mo_coeff[:, occidx]    
+    orbo = mo_coeff[:, occidx]
     h1 = lib.einsum('xpq,pi,qj->xij', int_r, mo_coeff.conj(), orbo)
     e2 = np.einsum('xpi,ypi->xy', h1, mo1)
     e2 = (e2 + e2.T) * 2
     return e2
-    
+
 def cubic_alch_hessian(mf,int_r,mo1,e1):
     mo_coeff = mf.mo_coeff
     mo_occ = mf.mo_occ
