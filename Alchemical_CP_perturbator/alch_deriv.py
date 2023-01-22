@@ -6,7 +6,6 @@ from AP_utils import parse_charge,DeltaV
 
 
 def alchemy_cphf_deriv(mf,int_r, with_cphf=True):
-    polobj=mf.Polarizability()
     # mol = mf.mol
     mo_energy = mf.mo_energy
     mo_coeff = mf.mo_coeff
@@ -20,6 +19,8 @@ def alchemy_cphf_deriv(mf,int_r, with_cphf=True):
     h1 = lib.einsum('pq,pi,qj->ij', int_r, mo_coeff.conj(), orbo) #going to molecular orbitals
     h1=h1.reshape((1,h1.shape[0],h1.shape[1]))
     s1 = np.zeros_like(h1)
+    # From PySCF 2.0.0 (2021-11-01), prop/polarizability is removed from core modules.
+    polobj=mf.Polarizability()
     vind = polobj.gen_vind(mf, mo_coeff, mo_occ)
     if with_cphf:
         mo1,e1 = cphf.solve(vind, mo_energy, mo_occ, h1, s1, polobj.max_cycle_cphf, polobj.conv_tol)
@@ -114,9 +115,30 @@ def alch_hessian(mf,int_r,mo1):
     mo_occ = mf.mo_occ
     occidx = mo_occ > 0
     orbo = mo_coeff[:, occidx]
+    # .conj() does not change the result.
     h1 = lib.einsum('xpq,pi,qj->xij', int_r, mo_coeff.conj(), orbo)
+    # For the rotation to the occupied orbitals, mo1 is zero valued.
     e2 = np.einsum('xpi,ypi->xy', h1, mo1)
     e2 = (e2 + e2.T) * 2
+
+    # # Check according to the equation
+    # # mo1 has (num_atom_sites, num_MO, num_occupied_MO)
+    # print("Check original e2:")
+    # print(e2)
+    # print("")
+    # unoccidx = mo_occ == 0
+    # orbv = mo_coeff[:, unoccidx]
+    # rot_mo1 = mo1[:, unoccidx, :]
+    # h1_check = lib.einsum('Ipq,pa,qi->Iai', int_r, orbv, orbo)
+    # e2_check = np.einsum('Iai,Jai->IJ', h1_check, rot_mo1)
+    # e2_check *= 4.0
+    # print("Check e2_check:")
+    # print(e2_check)
+    # print("")
+    # print("Check e2 - e2_check")
+    # print(e2 - e2_check)
+    # print("")
+
     return e2
 
 def cubic_alch_hessian(mf,int_r,mo1,e1):
