@@ -118,6 +118,7 @@ def alch_hessian(mf,int_r,mo1):
     # .conj() does not change the result.
     h1 = lib.einsum('xpq,pi,qj->xij', int_r, mo_coeff.conj(), orbo)
     # For the rotation to the occupied orbitals, mo1 is zero valued.
+    # TODO: Symmetry can be used to reduce the computational cost.
     e2 = np.einsum('xpi,ypi->xy', h1, mo1)
     e2 = (e2 + e2.T) * 2
 
