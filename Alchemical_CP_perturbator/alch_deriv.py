@@ -150,11 +150,22 @@ def cubic_alch_hessian(mf,int_r,mo1,e1):
     mo1 = lib.einsum('xqi,pq->xpi', mo1, mo_coeff)           #dC=UC
     dm1 = lib.einsum('xpi,qi->xpq', mo1, orbo) * 2
     dm1 = dm1 + dm1.transpose(0,2,1)            #dP= dCOC^T+COdC'T
-    vresp = mf.gen_response(hermi=1)
+    # In gen_response, singlet is not specified.
+    # Therefore, orbital hessian or CPHF will be generated.
+    vresp = mf.gen_response(hermi=1)  # (J-K/2)(dm)
     h1ao = int_r + vresp(dm1)         # dF=dV+G(dP)
     # *2 for double occupancy
     e3  = lib.einsum('xpq,ypi,zqi->xyz', h1ao, mo1, mo1) * 2   # trace( dC^T dF dC)
+    # e1 is the first-order derivative of the orbital energies and is obtained
+    # by the first-order CPHF.
     e3 -= lib.einsum('pq,xpi,yqj,zij->xyz', mf.get_ovlp(), mo1, mo1, e1) * 2  # - dC^T S dC de
     e3 = (e3 + e3.transpose(1,2,0) + e3.transpose(2,0,1) +
           e3.transpose(0,2,1) + e3.transpose(1,0,2) + e3.transpose(2,1,0))
+
+    # # T.S. confirmed that the following code gives the same result for N2 with the distance
+    # # of 2.1 a.u.
+    # # Eq. (14) in the article of alchemical force
+    # e3 = (e3 + e3.transpose(1,2,0) + e3.transpose(2,0,1))
+    # e3 *= 2.0
+
     return e3
