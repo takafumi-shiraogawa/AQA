@@ -3,4 +3,5 @@
 *.dat
 *.pdf
 *.pyc
+*.md
 test/
