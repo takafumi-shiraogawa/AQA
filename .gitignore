@@ -5,3 +5,5 @@
 *.pyc
 *.md
 test/
+__pycache__*
+.ipynb_checkpoints*
