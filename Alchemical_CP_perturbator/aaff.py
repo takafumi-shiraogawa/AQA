@@ -1,6 +1,5 @@
-from pyscf import scf,gto
+from pyscf import gto
 import numpy as np
-from pyscf.grad import rhf as grhf
 from AP_utils import DeltaV
 
 NUC_FRAC_CHARGE=gto.mole.NUC_FRAC_CHARGE
@@ -8,7 +7,7 @@ NUC_MOD_OF=gto.mole.NUC_MOD_OF
 PTR_FRAC_CHARGE=gto.mole.PTR_FRAC_CHARGE
 
 
-def g1(mol0,dP,P,DZ,g0):    # dP/dz*dH/dx, P* d2H/dzdx 
+def g1(mol0,dP,P,DZ,g0):    # dP/dz*dH/dx, P* d2H/dzdx
     natm=mol0.natm
     nao=mol0.nao
     denv=mol0._env.copy()
@@ -23,28 +22,33 @@ def g1(mol0,dP,P,DZ,g0):    # dP/dz*dH/dx, P* d2H/dzdx
             vrinv = -mol0.intor('int1e_iprinv', comp=3)
         shl0, shl1, p0, p1 = mol0.aoslice_by_atom()[atm_id]
         vrinv*=DZ[atm_id]
-        vrinv[:,p0:p1] += dH1[:,p0:p1]  
+        vrinv[:,p0:p1] += dH1[:,p0:p1]
         vrinv += vrinv.transpose(0,2,1)
         dH_dxdz[atm_id]=vrinv
-    ga_1=np.zeros((natm,3))    
+    ga_1=np.zeros((natm,3))
     for i in range(natm):
         ga_1[i]+=np.einsum('xij,ij->x', g0.hcore_generator()(i),dP)
         ga_1[i]+=np.einsum('xij,ij->x', dH_dxdz[i],P)
     return(ga_1)
 
-def g2(mol0,dP,P,DZ,g0):
+def g2(mol0,dP,P,DZ,g0): # (1/2) * dP/dZ * P * d/dR * (two electron AO integrals)
+    # DZ is not used.
     natm=mol0.natm
-    nao=mol0.nao
+    # nao=mol0.nao
     aoslices = mol0.aoslice_by_atom()
     ga_2=np.zeros((natm,3))
+
+    # Two electron MO integral with the unperturbed density matrix P
     vhf = g0.get_veff(mol0, P)
+    # Two electron MO integral with the perturbed density matrix
     vhf_1 = g0.get_veff(mol0, P+dP)
+
     for ia in range(natm):
         p0, p1 = aoslices [ia,2:]
         ga_2[ia]=(np.einsum('xij,ij->x', vhf[:,p0:p1], dP[p0:p1]) * 2)
         ga_2[ia]+=(np.einsum('xij,ij->x',vhf_1[:,p0:p1]-vhf[:,p0:p1], P[p0:p1]) * 2)
     return(ga_2)
-    
+
 def g3(mol0,dP,P,g0,e,e1,C,dC): #-dW/dZ *dS/dx
     s1=g0.get_ovlp(mol0)
     g3=np.zeros((mol0.natm,3))
@@ -55,7 +59,7 @@ def g3(mol0,dP,P,g0,e,e1,C,dC): #-dW/dZ *dS/dx
         p0, p1 = mol0.aoslice_by_atom() [i,2:]
         g3[i] -= np.einsum('xij,ij->x', s1[:,p0:p1], dW[p0:p1]) * 2
     return(g3)
-    
+
 
 # with CPHF done
 def aaff_resolv(mf,DZ,U,dP,e1):
@@ -70,8 +74,8 @@ def aaff_resolv(mf,DZ,U,dP,e1):
 def alc_deriv_grad_nuc(mol,dL):  # to get the derivative with respect to alch. perturbation
     gn = np.zeros((mol.natm,3))
     for j in range(mol.natm):
-        q2 =  mol.atom_charge(j)
-        r2 = mol.atom_coord(j) 
+        q2 = mol.atom_charge(j)
+        r2 = mol.atom_coord(j)
         for i in range(mol.natm):
             if i != j:
                 q1 = mol.atom_charge(i)
@@ -91,7 +95,7 @@ def alc_differential_grad_nuc(mol,dL):  # to get the exact diffeential after alc
                 r1 = mol.atom_coord(i)
                 r = np.linalg.norm(r1-r2)
                 gn[j] += (q1 * q2-mol.atom_charge(i)*mol.atom_charge(j)) * (r1-r2) / r**3
-    return gn 
+    return gn
 
 
 def g3_old(mol0,dP,P,DZ,g0,vresp,F): #-dW/dZ *dS/dx
@@ -103,4 +107,4 @@ def g3_old(mol0,dP,P,DZ,g0,vresp,F): #-dW/dZ *dS/dx
     for i in range(mol0.natm):
         p0, p1 = mol0.aoslice_by_atom() [i,2:]
         g3[i] -= np.einsum('xij,ij->x', s1[:,p0:p1], (S_1@((F@dP)+(dF@P)))[p0:p1]) * 2
-    return(g3)    
+    return(g3)
