@@ -14,6 +14,7 @@ from AP_utils import alias_param,parse_charge,DeltaV,charge2symbol
 from alch_deriv import *
 from ABSEC import abse_atom
 import copy
+import alch_deriv_ksdft
 
 
 class APDFT_perturbator(lib.StreamObject):
@@ -114,6 +115,13 @@ class APDFT_perturbator(lib.StreamObject):
     def third_deriv(self,pvec):
         pvec=np.asarray(pvec)
         return np.einsum('ijk,i,j,k',self.cubic_hessian,pvec,pvec,pvec)
+
+    def calc_geom_response_matrix(self):
+        """ Calculate first-order response matrix with respect to
+            nuclear coordinates
+        """
+        return alch_deriv_ksdft.make_U_R(self.mf)
+
     def build_gradient(self):
         idxs=self.sites
         self.gradient=np.asarray([self.first_deriv(x) for x in idxs])
