@@ -58,6 +58,7 @@ def get_response_matrix(mf, mo_energy, mo_coeff, mo_occ, h1ao_or_chkfile,
         # T.S.: To obtain the response matrix, the following conversion
         #       is commented out.
         # mo1 = numpy.einsum('pq,xqi->xpi', mo_coeff, mo1).reshape(-1,3,nao,nocc)
+        mo1 = mo1.reshape(-1,3,nmo,nocc)
         e1 = e1.reshape(-1,3,nocc,nocc)
 
         for k in range(ia1-ia0):
