@@ -56,6 +56,30 @@ def g3(mol0,dP,P,g0,e,e1,C,dC): #-dW/dZ *dS/dx
         g3[i] -= np.einsum('xij,ij->x', s1[:,p0:p1], dW[p0:p1]) * 2
     return(g3)
     
+def g1_R(mol0,dP,P,DZ,dV):    # dP/dz*dH/dx, P* d2H/dzdx 
+    natm=mol0.natm
+    nao=mol0.nao
+    denv=mol0._env.copy()
+    datm=mol0._atm.copy()
+    datm[:,NUC_MOD_OF] = NUC_FRAC_CHARGE
+    for i in range(natm):
+        denv[datm[i,PTR_FRAC_CHARGE]]=DZ[i]
+    dH1=-gto.moleintor.getints('int1e_ipnuc_sph',datm,mol0._bas,denv, None,3,0,'s1')
+    dH_dxdz=np.zeros((natm,3,nao,nao))
+    for atm_id in range(natm):
+        with mol0.with_rinv_at_nucleus(atm_id):
+            vrinv = -mol0.intor('int1e_iprinv', comp=3)
+        shl0, shl1, p0, p1 = mol0.aoslice_by_atom()[atm_id]
+        vrinv*=DZ[atm_id]
+        vrinv[:,p0:p1] += dH1[:,p0:p1]  
+        vrinv += vrinv.transpose(0,2,1)
+        dH_dxdz[atm_id]=vrinv
+    ga_1=np.zeros((natm,3))    
+    for i in range(natm):
+        # ga_1[i]+=np.einsum('xij,ij->x', g0.hcore_generator()(i),dP)
+        ga_1[i]+=np.einsum('ij,xij->x', dV,dP[i])
+        ga_1[i]+=np.einsum('xij,ij->x', dH_dxdz[i],P)
+    return(ga_1)
 
 # with CPHF done
 def aaff_resolv(mf,DZ,U,dP,e1):
@@ -66,6 +90,17 @@ def aaff_resolv(mf,DZ,U,dP,e1):
     e=mf.mo_energy
     dC=C@U
     return g1(mol0,dP,P,DZ,g0)+g2(mol0,dP,P,DZ,g0)+g3(mol0,dP,P,g0,e,e1,C,dC)
+
+# with CPKS for nuclear coordinates done
+def inefficient_aaff_resolv(mf,DZ,dP,dV):
+    mol0=mf.mol
+    # g0=mf.Gradients()
+    P=mf.make_rdm1()
+    # C=mf.mo_coeff
+    # e=mf.mo_energy
+    # dC=C@U
+    # return g1(mol0,dP,P,DZ,g0)+g2(mol0,dP,P,DZ,g0)+g3(mol0,dP,P,g0,e,e1,C,dC)
+    return g1_R(mol0,dP,P,DZ,dV)
 
 def alc_deriv_grad_nuc(mol,dL):  # to get the derivative with respect to alch. perturbation
     gn = np.zeros((mol.natm,3))

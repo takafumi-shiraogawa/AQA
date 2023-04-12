@@ -7,7 +7,7 @@ from pyscf import lib
 from functools import reduce
 from pyscf.scf import cphf
 from pyscf import lib
-from aaff import alc_deriv_grad_nuc,aaff_resolv
+from aaff import alc_deriv_grad_nuc,aaff_resolv,inefficient_aaff_resolv
 from scipy.spatial.transform import Rotation as R
 from FcMole import FcM_like
 from AP_utils import alias_param,parse_charge,DeltaV,charge2symbol 
@@ -39,6 +39,7 @@ class APDFT_perturbator(lib.StreamObject):
         self.hessian=None
         self.gradient=None
         self.xcf=None
+        self.flag_calc_U_R=False
         try: 
             self.xcf=mf.xc
         except:pass
@@ -116,11 +117,36 @@ class APDFT_perturbator(lib.StreamObject):
         pvec=np.asarray(pvec)
         return np.einsum('ijk,i,j,k',self.cubic_hessian,pvec,pvec,pvec)
 
-    def calc_geom_response_matrix(self):
-        """ Calculate first-order response matrix with respect to
-            nuclear coordinates
-        """
-        return alch_deriv_ksdft.make_U_R(self.mf)
+    def build_inefficient_alchemical_force(self, atm_idx):
+        """ Modified af """
+
+        # Calculate first-order response matrix with respect to
+        # nuclear coordinates
+        if not self.flag_calc_U_R:
+            self.mo1s_R = np.array(alch_deriv_ksdft.calc_U_R(self.mf))
+            self.dP_R = alch_deriv_ksdft.make_dP_R(self.mf,self.mo1s_R)
+            self.flag_calc_U_R = True
+
+        # if atm_idx in self.afs:
+        #     return self.afs[atm_idx]
+        # elif self.symm and atm_idx in self.symm.eqs:
+        #     ref_idx=self.symm.eqs[atm_idx]['ref']
+        #     afr=self.af(ref_idx)
+        #     self.afs[atm_idx]=self.symm.symm_gradient(afr,atm_idx,ref_idx)
+        # else:
+        # if atm_idx not in self.afs:
+
+        if atm_idx not in self.sites:
+            self.sites.append(atm_idx)
+            self.perturb()
+        DZ=[0 for x in range(self.mol.natm)]
+        DZ[atm_idx]=1
+        # af=aaff_resolv(self.mf,DZ,U=self.U(atm_idx),dP=self.dP(atm_idx),e1=self.e1(atm_idx))
+        af=inefficient_aaff_resolv(self.mf,DZ,dP=self.dP_R,dV=self.dV(atm_idx))
+        af+=alc_deriv_grad_nuc(self.mol,DZ)
+        self.afs[atm_idx]=af
+
+        return self.afs[atm_idx]
 
     def build_gradient(self):
         idxs=self.sites

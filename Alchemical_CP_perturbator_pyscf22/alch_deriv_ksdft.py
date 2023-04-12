@@ -1,3 +1,4 @@
+import numpy as np
 import mod_hessian_rhf
 
 def proc_hessian_(mf_hess, mo_energy=None, mo_coeff=None, mo_occ=None, h1ao_grad=None):
@@ -23,9 +24,33 @@ def proc_hessian_(mf_hess, mo_energy=None, mo_coeff=None, mo_occ=None, h1ao_grad
 
     return mo1
 
-def make_U_R(mf):
+def calc_U_R(mf):
     """ Calculate the first-order response matrix with respect to nuclear coordinates """
 
     mf.mf_hess = mod_hessian_rhf.Hessian(mf)
     mo1 = proc_hessian_(mf.mf_hess)
     return mo1
+
+def make_dP_R(mf,mo1_R):
+    mol=mf.mol
+    nao=mol.nao
+    nocc=mf.mol.nelec[0]
+    C=mf.mo_coeff
+    # dP=np.zeros_like(C)
+    num_atom = np.shape(mo1_R)[0]
+    dP = np.zeros((num_atom, 3, nao, nao))
+    for idx_atom in range(num_atom):
+        for idx_ncoord in range(3):
+            dP[idx_atom,idx_ncoord,:,:]=2*np.einsum(
+                'ij,jk,lk->il',C,mo1_R[idx_atom,idx_ncoord,:,:],C[:,:nocc])
+            dP[idx_atom,idx_ncoord]=dP[idx_atom,idx_ncoord]+dP[idx_atom,idx_ncoord].T
+    return dP
+
+# def make_U_R(mo1_R):
+#     # mo1_R's shape is (3, num_MO, num_occ_MO)
+#     U_R=np.zeros((3, mo1_R.shape[1],mo1_R.shape[1]))
+#     # inefficient alchemical force does not need the occupied-virtual block
+#     for i in range(3):
+#         U_R[i,:,:mo1_R.shape[2]]=mo1_R[i]
+#         U_R[i]=U_R[i]-U_R[i].T
+#     return U_R
