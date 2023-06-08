@@ -7,7 +7,7 @@ from pyscf import lib
 from functools import reduce
 from pyscf.scf import cphf
 from pyscf import lib
-from aaff import alc_deriv_grad_nuc,aaff_resolv,inefficient_aaff_resolv
+from aaff import alc_deriv_grad_nuc,aaff_resolv,inefficient_aaff_resolv,aaff_xc_resolv
 from scipy.spatial.transform import Rotation as R
 from FcMole import FcM_like
 from AP_utils import alias_param,parse_charge,DeltaV,charge2symbol 
@@ -40,6 +40,7 @@ class APDFT_perturbator(lib.StreamObject):
         self.gradient=None
         self.xcf=None
         self.flag_calc_U_R=False
+        self.afs_xc=None
         try: 
             self.xcf=mf.xc
         except:pass
@@ -143,6 +144,48 @@ class APDFT_perturbator(lib.StreamObject):
         DZ[atm_idx]=1
         # af=aaff_resolv(self.mf,DZ,U=self.U(atm_idx),dP=self.dP(atm_idx),e1=self.e1(atm_idx))
         af=inefficient_aaff_resolv(self.mf,DZ,dP=self.dP_R,dV=self.dV(atm_idx))
+        af+=alc_deriv_grad_nuc(self.mol,DZ)
+        self.afs[atm_idx]=af
+
+        return self.afs[atm_idx]
+
+    def build_alchemical_force(self, atm_idx):
+        """ Modified af """
+
+        # if atm_idx in self.afs:
+        #     return self.afs[atm_idx]
+        # elif self.symm and atm_idx in self.symm.eqs:
+        #     ref_idx=self.symm.eqs[atm_idx]['ref']
+        #     afr=self.af(ref_idx)
+        #     self.afs[atm_idx]=self.symm.symm_gradient(afr,atm_idx,ref_idx)
+        # else:
+        # if atm_idx not in self.afs:
+
+        if atm_idx not in self.sites:
+            self.sites.append(atm_idx)
+            self.perturb()
+        DZ=[0 for x in range(self.mol.natm)]
+        DZ[atm_idx]=1
+
+        if self.afs_xc is None:
+            # Calculate the exchange-correlation terms
+            self.afs_xc = aaff_xc_resolv(self.mf,self.mo1s)
+            print("self.afs_xc")
+            print(self.afs_xc)
+            print('')
+
+        # Calculate the alchemical force without the exchange-correlation terms
+        af=aaff_resolv(self.mf,DZ,U=self.U(atm_idx),dP=self.dP(atm_idx),e1=self.e1(atm_idx))
+        print("af without xc contributions")
+        print(af)
+        print('')
+
+        af+=self.afs_xc[atm_idx]
+
+        print("alc_deriv_grad_nuc(self.mol,DZ)")
+        print(alc_deriv_grad_nuc(self.mol,DZ))
+        print('')
+
         af+=alc_deriv_grad_nuc(self.mol,DZ)
         self.afs[atm_idx]=af
 

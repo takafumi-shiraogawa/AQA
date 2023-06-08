@@ -2,6 +2,7 @@ from pyscf import scf,gto
 import numpy as np
 from pyscf.grad import rhf as grhf
 from AP_utils import DeltaV
+import aaff_xc
 
 NUC_FRAC_CHARGE=gto.mole.NUC_FRAC_CHARGE
 NUC_MOD_OF=gto.mole.NUC_MOD_OF
@@ -101,6 +102,12 @@ def inefficient_aaff_resolv(mf,DZ,dP,dV):
     # dC=C@U
     # return g1(mol0,dP,P,DZ,g0)+g2(mol0,dP,P,DZ,g0)+g3(mol0,dP,P,g0,e,e1,C,dC)
     return g1_R(mol0,dP,P,DZ,dV)
+
+def aaff_xc_resolv(mf,dC):
+    # Calculate vxc and fxc terms of the alchemical force
+    hess_xc = aaff_xc.Hessian(mf, dC).kernel()
+
+    return hess_xc
 
 def alc_deriv_grad_nuc(mol,dL):  # to get the derivative with respect to alch. perturbation
     gn = np.zeros((mol.natm,3))
