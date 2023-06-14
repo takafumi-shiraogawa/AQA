@@ -1,10 +1,12 @@
 import numpy
 from pyscf import lib
 from pyscf.lib import logger
-# from pyscf.hessian import rhf as rhf_hess
+from pyscf.hessian import rhf as rhf_hess
 # from pyscf.grad import rks as rks_grad
 # from pyscf.dft import numint
 from pyscf.hessian import rks as rks_hess
+
+from pyscf.grad import rks
 
 def make_h1(hessobj, mo_coeff, mo_occ, chkfile=None, atmlst=None, verbose=None):
     """ Modified make_h1 in hessian/rks.py
@@ -15,60 +17,60 @@ def make_h1(hessobj, mo_coeff, mo_occ, chkfile=None, atmlst=None, verbose=None):
     if atmlst is None:
         atmlst = range(mol.natm)
 
-    # nao, nmo = mo_coeff.shape
-    # mocc = mo_coeff[:,mo_occ>0]
-    # dm0 = numpy.dot(mocc, mocc.T) * 2
+    nao, nmo = mo_coeff.shape
+    mocc = mo_coeff[:,mo_occ>0]
+    dm0 = numpy.dot(mocc, mocc.T) * 2
     # hcore_deriv = hessobj.base.nuc_grad_method().hcore_generator(mol)
 
     mf = hessobj.base
     ni = mf._numint
     ni.libxc.test_deriv_order(mf.xc, 2, raise_error=True)
-    # omega, alpha, hyb = ni.rsh_and_hybrid_coeff(mf.xc, spin=mol.spin)
-    # hybrid = ni.libxc.is_hybrid_xc(mf.xc)
+    omega, alpha, hyb = ni.rsh_and_hybrid_coeff(mf.xc, spin=mol.spin)
+    hybrid = ni.libxc.is_hybrid_xc(mf.xc)
 
     mem_now = lib.current_memory()[0]
     max_memory = max(2000, mf.max_memory*.9-mem_now)
     h1ao = rks_hess._get_vxc_deriv1(hessobj, mo_coeff, mo_occ, max_memory)
-    # aoslices = mol.aoslice_by_atom()
-    # for i0, ia in enumerate(atmlst):
-    #     shl0, shl1, p0, p1 = aoslices[ia]
-    #     shls_slice = (shl0, shl1) + (0, mol.nbas)*3
-    #     if hybrid:
-    #         vj1, vj2, vk1, vk2 = \
-    #                 rhf_hess._get_jk(mol, 'int2e_ip1', 3, 's2kl',
-    #                                  ['ji->s2kl', -dm0[:,p0:p1],  # vj1
-    #                                   'lk->s1ij', -dm0         ,  # vj2
-    #                                   'li->s1kj', -dm0[:,p0:p1],  # vk1
-    #                                   'jk->s1il', -dm0         ], # vk2
-    #                                  shls_slice=shls_slice)
-    #         veff = vj1 - hyb * .5 * vk1
-    #         veff[:,p0:p1] += vj2 - hyb * .5 * vk2
-    #         if omega != 0:
-    #             with mol.with_range_coulomb(omega):
-    #                 vk1, vk2 = \
-    #                     rhf_hess._get_jk(mol, 'int2e_ip1', 3, 's2kl',
-    #                                      ['li->s1kj', -dm0[:,p0:p1],  # vk1
-    #                                       'jk->s1il', -dm0         ], # vk2
-    #                                      shls_slice=shls_slice)
-    #             veff -= (alpha-hyb) * .5 * vk1
-    #             veff[:,p0:p1] -= (alpha-hyb) * .5 * vk2
-    #     else:
-    #         vj1, vj2 = rhf_hess._get_jk(mol, 'int2e_ip1', 3, 's2kl',
-    #                                     ['ji->s2kl', -dm0[:,p0:p1],  # vj1
-    #                                      'lk->s1ij', -dm0         ], # vj2
-    #                                     shls_slice=shls_slice)
-    #         veff = vj1
-    #         veff[:,p0:p1] += vj2
+    aoslices = mol.aoslice_by_atom()
+    for i0, ia in enumerate(atmlst):
+        shl0, shl1, p0, p1 = aoslices[ia]
+        shls_slice = (shl0, shl1) + (0, mol.nbas)*3
+        if hybrid:
+            vj1, vj2, vk1, vk2 = \
+                    rhf_hess._get_jk(mol, 'int2e_ip1', 3, 's2kl',
+                                     ['ji->s2kl', -dm0[:,p0:p1],  # vj1
+                                      'lk->s1ij', -dm0         ,  # vj2
+                                      'li->s1kj', -dm0[:,p0:p1],  # vk1
+                                      'jk->s1il', -dm0         ], # vk2
+                                     shls_slice=shls_slice)
+            veff = vj1 - hyb * .5 * vk1
+            veff[:,p0:p1] += vj2 - hyb * .5 * vk2
+            if omega != 0:
+                with mol.with_range_coulomb(omega):
+                    vk1, vk2 = \
+                        rhf_hess._get_jk(mol, 'int2e_ip1', 3, 's2kl',
+                                         ['li->s1kj', -dm0[:,p0:p1],  # vk1
+                                          'jk->s1il', -dm0         ], # vk2
+                                         shls_slice=shls_slice)
+                veff -= (alpha-hyb) * .5 * vk1
+                veff[:,p0:p1] -= (alpha-hyb) * .5 * vk2
+        else:
+            vj1, vj2 = rhf_hess._get_jk(mol, 'int2e_ip1', 3, 's2kl',
+                                        ['ji->s2kl', -dm0[:,p0:p1],  # vj1
+                                         'lk->s1ij', -dm0         ], # vj2
+                                        shls_slice=shls_slice)
+            veff = vj1
+            veff[:,p0:p1] += vj2
+        h1ao[ia] += veff + veff.transpose(0,2,1)
+        # h1ao[ia] += hcore_deriv(ia)
 
-    #     h1ao[ia] += veff + veff.transpose(0,2,1)
-    #     h1ao[ia] += hcore_deriv(ia)
-
-    if chkfile is None:
-        return h1ao
-    else:
-        for ia in atmlst:
-            lib.chkfile.save(chkfile, 'scf_f1ao/%d'%ia, h1ao[ia])
-        return chkfile
+    # if chkfile is None:
+    #     return h1ao
+    # else:
+    #     for ia in atmlst:
+    #         lib.chkfile.save(chkfile, 'scf_f1ao/%d'%ia, h1ao[ia])
+    #     return chkfile
+    return h1ao
 
 
 def hess_elec(hessobj, mo_energy=None, mo_coeff=None, mo_occ=None,
@@ -104,9 +106,9 @@ def hess_elec(hessobj, mo_energy=None, mo_coeff=None, mo_occ=None,
     #                                    None, atmlst, max_memory, log)
     #     t1 = log.timer_debug1('solving MO1', *t1)
 
-    if isinstance(h1ao, str):
-        h1ao = lib.chkfile.load(h1ao, 'scf_f1ao')
-        h1ao = dict([(int(k), h1ao[k]) for k in h1ao])
+    # if isinstance(h1ao, str):
+    #     h1ao = lib.chkfile.load(h1ao, 'scf_f1ao')
+    #     h1ao = dict([(int(k), h1ao[k]) for k in h1ao])
     # if isinstance(mo1, str):
     #     mo1 = lib.chkfile.load(mo1, 'scf_mo1')
     #     mo1 = dict([(int(k), mo1[k]) for k in mo1])
@@ -129,7 +131,7 @@ def hess_elec(hessobj, mo_energy=None, mo_coeff=None, mo_occ=None,
             # q0, q1 = aoslices[ja][2:]
 # *2 for double occupancy, *2 for +c.c.
             # dm1 = numpy.einsum('ypi,qi->ypq', mo1[ja], mocc)
-            dm1 = numpy.einsum('pi,qi->pq', mo1[ia], mocc)
+            dm1 = numpy.einsum('ij,jk,lk->il', mo_coeff, mo1[ia], mocc)
             # de2[i0,j0] += numpy.einsum('xpq,ypq->xy', h1ao[ia], dm1) * 4
             de2[i0,j0] += numpy.einsum('xpq,pq->x', h1ao[ja], dm1) * 4
             # dm1 = numpy.einsum('ypi,qi,i->ypq', mo1[ja], mocc, mo_energy[mo_occ>0])

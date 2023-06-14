@@ -41,7 +41,7 @@ def g2(mol0,dP,P,DZ,g0):
     vhf = g0.get_veff(mol0, P)
     vhf_1 = g0.get_veff(mol0, P+dP)
     for ia in range(natm):
-        p0, p1 = aoslices [ia,2:]
+        p0, p1 = aoslices[ia,2:]
         ga_2[ia]=(np.einsum('xij,ij->x', vhf[:,p0:p1], dP[p0:p1]) * 2)
         ga_2[ia]+=(np.einsum('xij,ij->x',vhf_1[:,p0:p1]-vhf[:,p0:p1], P[p0:p1]) * 2)
     return(ga_2)
@@ -90,7 +90,14 @@ def aaff_resolv(mf,DZ,U,dP,e1):
     C=mf.mo_coeff
     e=mf.mo_energy
     dC=C@U
-    return g1(mol0,dP,P,DZ,g0)+g2(mol0,dP,P,DZ,g0)+g3(mol0,dP,P,g0,e,e1,C,dC)
+    mf_name = mf.__class__.__name__
+    if mf_name in ['RHF', "SymAdaptedRHF"]:
+        return g1(mol0,dP,P,DZ,g0)+g2(mol0,dP,P,DZ,g0)+g3(mol0,dP,P,g0,e,e1,C,dC)
+    elif mf_name in ['RKS', "SymAdaptedRKS"]:
+        # g2 is calculated with aaff_xc_resolv.make_h1
+        return g1(mol0,dP,P,DZ,g0)+g3(mol0,dP,P,g0,e,e1,C,dC)
+    else:
+        raise ValueError(mf.__class__.__name__, "should be RHF or SymAdaptedRHF or RKS or  or SymAdaptedRKS")
 
 # with CPKS for nuclear coordinates done
 def inefficient_aaff_resolv(mf,DZ,dP,dV):

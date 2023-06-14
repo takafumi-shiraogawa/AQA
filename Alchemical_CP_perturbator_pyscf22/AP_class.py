@@ -170,22 +170,10 @@ class APDFT_perturbator(lib.StreamObject):
         if self.afs_xc is None:
             # Calculate the exchange-correlation terms
             self.afs_xc = aaff_xc_resolv(self.mf,self.mo1s)
-            print("self.afs_xc")
-            print(self.afs_xc)
-            print('')
 
         # Calculate the alchemical force without the exchange-correlation terms
         af=aaff_resolv(self.mf,DZ,U=self.U(atm_idx),dP=self.dP(atm_idx),e1=self.e1(atm_idx))
-        print("af without xc contributions")
-        print(af)
-        print('')
-
         af+=self.afs_xc[atm_idx]
-
-        print("alc_deriv_grad_nuc(self.mol,DZ)")
-        print(alc_deriv_grad_nuc(self.mol,DZ))
-        print('')
-
         af+=alc_deriv_grad_nuc(self.mol,DZ)
         self.afs[atm_idx]=af
 
