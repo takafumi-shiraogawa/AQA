@@ -1,0 +1,11 @@
+*.txt
+*.csv
+*.dat
+*.pdf
+*.pyc
+*.md
+*.so
+tmp*
+test/
+__pycache__*
+.ipynb_checkpoints*
