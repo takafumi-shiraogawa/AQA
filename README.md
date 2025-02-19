@@ -10,7 +10,7 @@ Article | Authors | Title
 
 For the license, please refer to the LICENSE section.
 AQA is also based on PySCF ([pyscf/pyscf](https://github.com/pyscf/pyscf)).
-The license file of PySCF is included in `./aqa/`.
+The license and notice files of PySCF is included in `./aqa/`.
 
 AQA is still under development and contain bugs.
 
@@ -24,7 +24,11 @@ AQA was used in the following work:
 
 Article | Authors | Title
 --------|---------|--------
-arXiv 2025 | Takafumi Shiraogawa, Simon León Krug, Masahiro Ehara, O. Anatole von Lilienfeld | Antisymmetry rules of response properties in certain chemical spaces
+[arXiv 2025](https://arxiv.org/abs/2502.12761) | Takafumi Shiraogawa, Simon León Krug, Masahiro Ehara, O. Anatole von Lilienfeld | Antisymmetry rules of response properties in certain chemical spaces
+
+The following modifications are made for PySCF:
+- SCF convergence criteria are modified for APDFT calculations.
+- The analytical derivatives are implemented based on the implementation of PySCF.
 
 
 ## Installation
@@ -36,6 +40,7 @@ is not packaged.
 Generation of chemical space with unique molecules depends on QML ([qmlcode/qml](https://github.com/qmlcode/qml)).
 Please compile `frepresentations.f90` in `./aqa/mini_qml/` with F2PY.
 The example of the command can be found in `./aqa/mini_qml/compile.sh`.
+The license file of QML is included in `./aqa/mini_qml/`.
 
 ### Requirements
 To install the required packages, please use `aqa_env.yml` or run the following commands:
@@ -49,7 +54,7 @@ conda install pandas
 conda install xarray  
 pip install git+https://github.com/pyscf/properties  
 ```
-Only PySCF ver. 2.2 are tested. The older version of PySCF cannot be used.
+Only PySCF ver. 2.2 is tested. The older version of PySCF cannot be used.
 Please add a path of `properties/` to PYSCF_EXT_PATH.
 
 
