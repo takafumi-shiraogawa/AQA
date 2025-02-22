@@ -1,4 +1,6 @@
 # AQA: Analytical Quantum Alchemy
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14885476.svg)](https://doi.org/10.5281/zenodo.14885476)
+
 This code is a modification of [giorgiodomen/Supplementary_code_for_Quantum_Alchemy](https://github.com/giorgiodomen/Supplementary_code_for_Quantum_Alchemy)
 developed by Dr. Giorgio Domenichini. Please refer to articles related to the original code:
 
