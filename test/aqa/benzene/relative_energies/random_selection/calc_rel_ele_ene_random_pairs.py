@@ -1,9 +1,9 @@
-from alch_calc_utils import calc_relative_energies_from_output, calc_scf_relative_energies_from_output
-from alch_calc_utils import calc_scf_ele_energies_from_nuc_charge_vecs, write_scf_ele_ene_dat
-from alch_calc_utils import read_xyz_file, generate_data_string
-from alch_calc_utils import get_randomly_selected_alch_isomers, get_mols_in_alch_isomers, \
+from aqa.alch_calc_utils import calc_relative_energies_from_output, calc_scf_relative_energies_from_output
+from aqa.alch_calc_utils import calc_scf_ele_energies_from_nuc_charge_vecs, write_scf_ele_ene_dat
+from aqa.alch_calc_utils import read_xyz_file, generate_data_string
+from aqa.alch_calc_utils import get_randomly_selected_alch_isomers, get_mols_in_alch_isomers, \
     get_selected_unique_nuclear_numbers_list_from_mol_indexes
-from utils import write_relative_energies
+from aqa.utils import write_relative_energies
 import basis_set_exchange as bse
 
 # Inputs of SCF calculations

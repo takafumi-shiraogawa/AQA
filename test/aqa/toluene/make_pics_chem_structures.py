@@ -2,7 +2,7 @@ from rdkit import Chem
 from rdkit.Chem import Draw
 from PIL import Image
 from rdkit.Chem.Draw import rdMolDraw2D
-from utils import read_target_molecules
+from aqa.utils import read_target_molecules
 
 Image.MAX_IMAGE_PIXELS = 1000000000
 

@@ -1,4 +1,4 @@
-from alch_calc_utils import get_alch_isomers_indexes
+from aqa.alch_calc_utils import get_alch_isomers_indexes
 
 # Set parameters
 path_xyz_file = "./benzene.xyz"

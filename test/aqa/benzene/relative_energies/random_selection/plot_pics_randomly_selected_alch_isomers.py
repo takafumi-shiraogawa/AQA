@@ -1,5 +1,5 @@
 import numpy as np
-from utils import scatter_plot_relative_energies, plot_relative_energies
+from aqa.utils import scatter_plot_relative_energies, plot_relative_energies
 
 range_enantiomers = list(range(0, 5, 1))
 range_diastereomers = list(range(0, 19, 6))

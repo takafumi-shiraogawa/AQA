@@ -20,13 +20,13 @@ target_mol = """
 dft_functional = "pbe0"
 name_basis_set = {"H":bse.get_basis("pc-2",fmt="nwchem",elements=[1]),'C':bse.get_basis("pcX-2",fmt="nwchem",elements=[6])}
 
-from alch_calc import alchemical_calculator as ac
+from aqa.alch_calc import alchemical_calculator as ac
 
 ac_mol = ac(target_mol, name_basis_set, dft_functional, sites=[0,1,2,3,4,5], bse_off=True, grid_level=5)
 
 ac_mol.calc_all_derivatives()
 
-from alch_calc_utils import get_multi_ele_energies, write_csv_output_APDFT_energies, write_csv_output_ele_ene_derivatives
+from aqa.alch_calc_utils import get_multi_ele_energies, write_csv_output_APDFT_energies, write_csv_output_ele_ene_derivatives
 
 ele_enes_apdft = get_multi_ele_energies(ac_mol)
 write_csv_output_APDFT_energies(ele_enes_apdft)

@@ -1,4 +1,4 @@
-from alch_calc_utils import calc_relative_energies_from_output, \
+from aqa.alch_calc_utils import calc_relative_energies_from_output, \
     calc_scf_relative_energies_from_output, get_alch_diastereomers
 
 alch_diastereomers = get_alch_diastereomers()

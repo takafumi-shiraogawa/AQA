@@ -1,5 +1,5 @@
 import numpy as np
-from utils import scatter_plot_relative_energies
+from aqa.utils import scatter_plot_relative_energies
 
 scatter_range_enantiomers = np.linspace(0, 0.1, 6)
 scatter_range_diastereomers = None

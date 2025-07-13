@@ -1,9 +1,9 @@
-from alch_calc_utils import read_xyz_file, generate_data_string
-from alch_calc_utils import get_randomly_selected_alch_isomers, get_mols_in_alch_isomers, \
+from aqa.alch_calc_utils import read_xyz_file, generate_data_string
+from aqa.alch_calc_utils import get_randomly_selected_alch_isomers, get_mols_in_alch_isomers, \
     get_selected_unique_nuclear_numbers_list_from_mol_indexes
-from utils import write_alch_isomers
+from aqa.utils import write_alch_isomers
 import basis_set_exchange as bse
-from gener_chem_space import write_all_gjf_gen
+from aqa.gener_chem_space import write_all_gjf_gen
 
 # Inputs of SCF calculations
 path_xyz_file = "./benzene.xyz"

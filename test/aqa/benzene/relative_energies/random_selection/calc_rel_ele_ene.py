@@ -1,6 +1,6 @@
-from alch_calc_utils import calc_relative_energies_from_output, \
+from aqa.alch_calc_utils import calc_relative_energies_from_output, \
     calc_scf_relative_energies_from_output, get_alch_isomers_indexes
-from utils import write_relative_energies
+from aqa.utils import write_relative_energies
 
 path_xyz_file = "./benzene.xyz"
 alch_isomers = get_alch_isomers_indexes(path_xyz_file)
