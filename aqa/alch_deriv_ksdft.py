@@ -1,5 +1,5 @@
 import numpy as np
-import mod_hessian_rhf
+from . import mod_hessian_rhf
 
 def proc_hessian_(mf_hess, mo_energy=None, mo_coeff=None, mo_occ=None, h1ao_grad=None):
     """

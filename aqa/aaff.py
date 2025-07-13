@@ -1,8 +1,8 @@
 from pyscf import scf,gto
 import numpy as np
 from pyscf.grad import rhf as grhf
-from AP_utils import DeltaV
-import aaff_xc
+from .AP_utils import DeltaV
+from . import aaff_xc
 
 NUC_FRAC_CHARGE=gto.mole.NUC_FRAC_CHARGE
 NUC_MOD_OF=gto.mole.NUC_MOD_OF

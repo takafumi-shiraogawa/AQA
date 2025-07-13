@@ -4,11 +4,11 @@ from pyscf import gto, scf, lib
 import pandas as pd
 import xarray as xr
 import csv
-import mini_qml.representations as amr
-from alch_calc import alchemical_calculator as ac
+from .mini_qml import representations as amr
+from .alch_calc import alchemical_calculator as ac
 import multiprocessing as mp
-from utils import read_relative_energies_from_outputs
-from mod_pyscf_scf import RHF, RKS
+from .utils import read_relative_energies_from_outputs
+from .mod_pyscf_scf import RHF, RKS
 
 def judge_alch_isomers_types(alch_isomers):
     try:

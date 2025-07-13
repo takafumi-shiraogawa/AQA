@@ -1,13 +1,13 @@
 from pyscf import gto, scf
 import numpy as np
 from pyscf import lib
-from aaff import alc_deriv_grad_nuc,aaff_resolv,inefficient_aaff_resolv,aaff_xc_resolv
-from FcMole import FcM_like
-from AP_utils import alias_param,parse_charge,DeltaV,charge2symbol
-from alch_deriv import * # Including alchemy_cphf_deriv and electric_field_cphf_deriv
-from ABSEC import abse_atom
+from .aaff import alc_deriv_grad_nuc,aaff_resolv,inefficient_aaff_resolv,aaff_xc_resolv
+from .FcMole import FcM_like
+from .AP_utils import alias_param,parse_charge,DeltaV,charge2symbol
+from .alch_deriv import * # Including alchemy_cphf_deriv and electric_field_cphf_deriv
+from .ABSEC import abse_atom
 import copy
-import alch_deriv_ksdft
+from . import alch_deriv_ksdft
 
 
 class APDFT_perturbator(lib.StreamObject):

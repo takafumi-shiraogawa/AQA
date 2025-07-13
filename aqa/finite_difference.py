@@ -1,5 +1,5 @@
 import numpy as np
-from alch_calc import alchemical_calculator as ac
+from .alch_calc import alchemical_calculator as ac
 
 def get_finite_difference_coefficients(h, accuracy):
     """ Get finite difference coefficients.

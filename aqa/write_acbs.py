@@ -1,4 +1,4 @@
-from AC_basis import p631g,p321g,ccpvDZ
+from .AC_basis import p631g,p321g,ccpvDZ
 import argparse
 import basis_set_exchange as bse
 

@@ -2,7 +2,7 @@ import numpy as np
 from pyscf import lib
 from pyscf.scf import cphf
 #from pyscf.prop.nmr import rhf as rhf_nmr
-import aaff_xc
+from . import aaff_xc
 
 from pyscf.hessian.rhf import gen_vind
 

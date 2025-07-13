@@ -37,8 +37,7 @@ The following modifications are made for PySCF:
 ```
 git clone https://github.com/takafumi-shiraogawa/AQA
 ```
-Please add a path of `aqa/` to PYTHONPATH since the current version of AQA
-is not packaged.
+Please add a path of `AQA/` to PYTHONPATH.
 Generation of chemical space with unique molecules depends on QML ([qmlcode/qml](https://github.com/qmlcode/qml)).
 Please compile `frepresentations.f90` in `./aqa/mini_qml/` with F2PY.
 The example of the command can be found in `./aqa/mini_qml/compile.sh`.

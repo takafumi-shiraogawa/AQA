@@ -1,23 +1,21 @@
 from pyscf import gto
-from AP_utils import parse_charge
+from .AP_utils import parse_charge
 
 NUC_FRAC_CHARGE=gto.mole.NUC_FRAC_CHARGE
 NUC_MOD_OF=gto.mole.NUC_MOD_OF
 PTR_FRAC_CHARGE=gto.mole.PTR_FRAC_CHARGE
 
-
-
 def with_rinv_at_nucleus(self, atm_id):
         rinv = self.atom_coord(atm_id)
         self._env[gto.mole.AS_RINV_ORIG_ATOM] = atm_id  # required by ecp gradients
         return self.with_rinv_origin(rinv)
-    
+
 class FracMole(gto.Mole):
     def with_rinv_at_nucleus(self, atm_id):
         rinv = self.atom_coord(atm_id)
         self._env[gto.mole.AS_RINV_ORIG_ATOM] = atm_id  # required by ecp gradients
         return self.with_rinv_origin(rinv)
-    
+
 def FcM(fcs=[],**kwargs):
     mol = FracMole()
     mol.build(**kwargs)

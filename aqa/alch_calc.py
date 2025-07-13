@@ -1,8 +1,8 @@
 from pyscf import gto, scf
 import basis_set_exchange as bse
-from AP_class import APDFT_perturbator as AP
-from FcMole import FcM_like
-from mod_pyscf_scf import RHF, RKS
+from .AP_class import APDFT_perturbator as AP
+from .FcMole import FcM_like
+from .mod_pyscf_scf import RHF, RKS
 
 class alchemical_calculator():
     """ Alchemical calculator class """

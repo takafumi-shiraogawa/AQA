@@ -3,9 +3,9 @@ from pyscf.gto.mole import make_env
 from pyscf.scf._vhf import incore
 import numpy as np
 
-from NucNuc_derivs import first_deriv_nuc_nuc
-from alch_deriv import parse_charge,DeltaV
-from FcMole import FcM,FracMole
+from .NucNuc_derivs import first_deriv_nuc_nuc
+from .alch_deriv import parse_charge,DeltaV
+from .FcMole import FcM,FracMole
 from pyscf.data.elements import charge as Z_charge
 import copy
 

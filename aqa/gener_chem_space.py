@@ -2,9 +2,9 @@ import os
 import numpy as np
 import itertools as it
 import copy
-import mini_qml.representations as amr
+from .mini_qml import representations as amr
 from scipy.linalg import norm
-from alch_calc_utils import read_xyz_file, write_gjf, write_gjf_gen
+from .alch_calc_utils import read_xyz_file, write_gjf, write_gjf_gen
 
 # 0. Group all those structures that have the same stoichiometry
 # 1. Calculate norm of Coulomb matrix and group all those structures that have the same norm
