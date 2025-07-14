@@ -7,8 +7,8 @@ developed by Dr. Giorgio Domenichini. Please refer to articles related to the or
 Article | Authors | Title
 --------|---------|--------
 [J. Phys. Chem. 2022](https://aip.scitation.org/doi/10.1063/5.0085817) | Giorgio Domenichini, O. Anatole von Lilienfeld | Alchemical geometry relaxation
-[arXiv 2023](https://doi.org/10.48550/arXiv.2306.16409) | O. Anatole von Lilienfeld, Giorgio Domenichini | Even order contributions to relative energies vanish for antisymmetric perturbations
 [J. Phys. Chem. 2024](https://doi.org/10.1063/5.0196383) | Giorgio Domenichini | Extending the definition of atomic basis sets to atoms with fractional nuclear charge
+[arXiv 2025](https://doi.org/10.48550/arXiv.2306.16409) | O. Anatole von Lilienfeld, Giorgio Domenichini | Alchemical diastereomers from antisymmetric alchemical perturbations
 
 For the license, please refer to the LICENSE section.
 AQA is also based on PySCF ([pyscf/pyscf](https://github.com/pyscf/pyscf)).
@@ -26,7 +26,7 @@ AQA was used in the following work:
 
 Article | Authors | Title
 --------|---------|--------
-[arXiv 2025](https://arxiv.org/abs/2502.12761) | Takafumi Shiraogawa, Simon León Krug, Masahiro Ehara, O. Anatole von Lilienfeld | Antisymmetry rules of response properties in certain chemical spaces
+[J. Chem. Phys. 2025](https://doi.org/10.1063/5.0271350) ([arXiv 2025](https://arxiv.org/abs/2502.12761)) | Takafumi Shiraogawa, Simon León Krug, Masahiro Ehara, O. Anatole von Lilienfeld | Antisymmetry rules of response properties in certain chemical spaces
 
 The following modifications are made for PySCF:
 - SCF convergence criteria are modified for APDFT calculations.
